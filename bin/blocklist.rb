@@ -26,7 +26,7 @@ def get_cached_dns( ip )
 end
 
 def get_cc( ip )
-  `whois '#{ip}'`.split( "\n" ).each do |line|
+  `whois '#{ip}'`.force_encoding( 'BINARY' ).split( "\n" ).each do |line|
     # pp line
     case line
     when /^country:/i
