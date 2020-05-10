@@ -1,0 +1,26 @@
+# rubocop configuration
+
+Layout/SpaceInsideArrayLiteralBrackets:
+  EnforcedStyle: space
+
+Layout/SpaceInsideParens:
+  EnforcedStyle: space
+
+Layout/SpaceInsideRangeLiteral:
+  EnforcedStyle: space
+
+Layout/SpaceInsideReferenceBrackets:
+  EnforcedStyle: space
+
+Style/RegexpLiteral:
+  Enabled: false
+
+Style/SpecialGlobalVars:
+  EnforcedStyle: use_perl_names
+
+Style/SymbolArray:
+  EnforcedStyle: brackets
+
+Style/WordArray:
+  EnforcedStyle: brackets
+
