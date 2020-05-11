@@ -27,6 +27,7 @@ end
 
 def get_cc( ip )
   country = nil
+  last = nil
   inetnum = false
   `whois '#{ip}'`.force_encoding( 'BINARY' ).split( "\n" ).each do |line|
     # pp line
@@ -36,18 +37,18 @@ def get_cc( ip )
     when /^inetnum:/i
       inetnum = true
     when /^country:/i
+      last = line.split( ':', 2 ).last.strip
       next unless inetnum
 
-      country = line.split( ':', 2 ).last.strip
+      country = last
     end
   end
-  exit 1 if country.nil?
-
+  country = last if country.nil?
   return country
 end
 
 def get_cached_cc( ip )
-  return @cc_cache[ ip ] if @cc_cache.key?( ip )
+  return @cc_cache[ ip ] if @cc_cache.key?( ip ) && @cc_cache[ ip ] != nil
 
   @cc_cache[ ip ] = get_cc( ip )
 end
@@ -83,7 +84,7 @@ end
 
 load_cache
 list = []
-raw = `blacklistctl dump -b -n`
+raw = `blacklistctl dump -b -n -w`
 # pp raw
 raw.split( "\n" ).each do |line|
   address_port, state, _nfail, access = line.split( "\t", 4 )
@@ -92,6 +93,7 @@ end
 list.sort.each do |row|
   access, address_port, state = row
   # p [ address_port, access ]
+  address_port.strip!
   ip = address_port.split( '/' ).first.strip
   cc = get_cached_cc( ip )
   dns = get_cached_dns( ip )
