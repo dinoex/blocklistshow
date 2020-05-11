@@ -26,14 +26,24 @@ def get_cached_dns( ip )
 end
 
 def get_cc( ip )
+  country = nil
+  inetnum = false
   `whois '#{ip}'`.force_encoding( 'BINARY' ).split( "\n" ).each do |line|
     # pp line
     case line
+    when /^$/
+      inetnum = false
+    when /^inetnum:/i
+      inetnum = true
     when /^country:/i
-      return line.split( ':', 2 ).last.strip
+      next unless inetnum
+
+      country = line.split( ':', 2 ).last.strip
     end
   end
-  exit 1
+  exit 1 if country.nil?
+
+  return country
 end
 
 def get_cached_cc( ip )
@@ -59,6 +69,16 @@ end
 def save_cache
   File.write( DNS_CACHE_FILE, JSON.dump( @dns_cache ) + "\n" )
   File.write( CC_CACHE_FILE, JSON.dump( @cc_cache ) + "\n" )
+end
+
+case ARGV[ 0 ]
+when 'test'
+  ip = ARGV[ 1 ]
+  @dns_cache = {}
+  @cc_cache = {}
+  p get_dns( ip )
+  p get_cc( ip )
+  exit 0
 end
 
 load_cache
