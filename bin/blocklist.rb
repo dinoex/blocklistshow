@@ -7,6 +7,9 @@ require 'pp'
 DNS_CACHE_FILE = '/var/db/blacklistd.dns.json'.freeze
 CC_CACHE_FILE = '/var/db/blacklistd.cc.json'.freeze
 
+# pkg install databases/ruby-bdb net/webalizer-geodb
+GEODB_FILE = '/usr/local/share/geolizer/GeoDB.dat'.freeze
+
 def get_dns( ip )
   return @dns_cache[ ip ] if @dns_cache.key?( ip )
 
@@ -25,7 +28,7 @@ def get_cached_dns( ip )
   @dns_cache[ ip ] = get_dns( ip )
 end
 
-def get_cc( ip )
+def get_whois( ip )
   country = nil
   last = nil
   inetnum = false
@@ -44,13 +47,38 @@ def get_cc( ip )
     end
   end
   country = last if country.nil?
-  return country
+  country
+end
+
+def get_cached_whois( ip )
+  return @cc_cache[ ip ] if @cc_cache.key?( ip ) && !@cc_cache[ ip ].nil?
+
+  @cc_cache[ ip ] = get_whois( ip )
+end
+
+def geodb_key( ip )
+  ip2 = IPAddr.new( ip )
+  return ip2.hton if ip2.ipv6?
+
+  "\0\0\0\0\0\0\0\0\0\0\0\0" + ip2.hton
+end
+
+def get_cc( ip )
+  db = BDB::Btree.open(
+    GEODB_FILE, nil, BDB::RDONLY, 0o0644,
+    'set_pagesize' => 1024, 'set_cachesize' => [ 0, 32 * 1024, 0 ]
+  )
+  country = db.cursor.set_range( geodb_key( ip ) )[ 1 ][ 0 .. 1 ]
+  db.close
+  country
 end
 
 def get_cached_cc( ip )
-  return @cc_cache[ ip ] if @cc_cache.key?( ip ) && @cc_cache[ ip ] != nil
-
-  @cc_cache[ ip ] = get_cc( ip )
+  if @cc_cache.nil?
+    get_cc( ip )
+  else
+    get_cached_whois( ip )
+  end
 end
 
 def load_json( filename )
@@ -64,11 +92,19 @@ end
 
 def load_cache
   @dns_cache = load_json( DNS_CACHE_FILE )
-  @cc_cache = load_json( CC_CACHE_FILE )
+  @cc_cache =
+    if File.exist?( GEODB_FILE )
+      require 'bdb'
+      nil
+    else
+      load_json( CC_CACHE_FILE )
+    end
 end
 
 def save_cache
   File.write( DNS_CACHE_FILE, JSON.dump( @dns_cache ) + "\n" )
+  return if @cc_cache.nil?
+
   File.write( CC_CACHE_FILE, JSON.dump( @cc_cache ) + "\n" )
 end
 
