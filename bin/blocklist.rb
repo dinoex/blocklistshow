@@ -13,13 +13,14 @@ GEODB_FILE = '/usr/local/share/geolizer/GeoDB.dat'.freeze
 def get_dns( ip )
   return @dns_cache[ ip ] if @dns_cache.key?( ip )
 
+  result = nil
   `host '#{ip}'`.split( "\n" ).each do |line|
     return 'not found' if line =~ /not found/
     return line.split( /[\s]/ ).last if line =~ /domain name pointer/
 
-    return line
+    result = line
   end
-  nil
+  result
 end
 
 def get_cached_dns( ip )
@@ -114,7 +115,12 @@ when 'test'
   @dns_cache = {}
   @cc_cache = {}
   p get_dns( ip )
-  p get_cc( ip )
+  if File.exist?( GEODB_FILE )
+    require 'bdb'
+    p get_cc( ip )
+  else
+    p get_whois( ip )
+  end
   exit 0
 end
 
