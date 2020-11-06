@@ -109,19 +109,31 @@ def save_cache
   File.write( CC_CACHE_FILE, JSON.dump( @cc_cache ) + "\n" )
 end
 
-case ARGV[ 0 ]
-when 'test'
-  ip = ARGV[ 1 ]
-  @dns_cache = {}
-  @cc_cache = {}
-  p get_dns( ip )
-  if File.exist?( GEODB_FILE )
-    require 'bdb'
-    p get_cc( ip )
+filter_cc = nil
+filter_port = 0
+while not ARGV.empty?
+  option = ARGV.shift
+  case option
+  when 'test'
+    ip = ARGV[ 1 ]
+    @dns_cache = {}
+    @cc_cache = {}
+    p get_dns( ip )
+    if File.exist?( GEODB_FILE )
+      require 'bdb'
+      p get_cc( ip )
+    else
+      p get_whois( ip )
+    end
+    exit 0
+  when /^[0-9]+$/
+    filter_port = option.to_i
+  when /^[a-z][a-z]$/
+    filter_cc = option
   else
-    p get_whois( ip )
+    STDERR.puts "Fehler #{option}"
+    exit 65
   end
-  exit 0
 end
 
 load_cache
@@ -136,8 +148,16 @@ list.sort.each do |row|
   access, address_port, state = row
   # p [ address_port, access ]
   address_port.strip!
-  ip = address_port.split( '/' ).first.strip
+  pair = address_port.split( '/' )
+  port = pair.last.split( ':' ).last.to_i
+  unless filter_port == 0
+    next if port != filter_port
+  end
+  ip = pair.first.strip
   cc = get_cached_cc( ip )
+  unless filter_cc.nil?
+    next if cc != filter_cc
+  end
   dns = get_cached_dns( ip )
   white =
     case state
