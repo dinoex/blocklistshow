@@ -111,11 +111,11 @@ end
 
 filter_cc = nil
 filter_port = 0
-while not ARGV.empty?
+until ARGV.empty?
   option = ARGV.shift
   case option
   when 'test'
-    ip = ARGV[ 1 ]
+    ip = ARGV.shift
     @dns_cache = {}
     @cc_cache = {}
     p get_dns( ip )
@@ -150,7 +150,7 @@ list.sort.each do |row|
   address_port.strip!
   pair = address_port.split( '/' )
   port = pair.last.split( ':' ).last.to_i
-  unless filter_port == 0
+  unless filter_port.zero?
     next if port != filter_port
   end
   ip = pair.first.strip
