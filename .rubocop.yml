@@ -4,15 +4,29 @@ inherit_from: .rubocop_todo.yml
 
 Layout/SpaceInsideArrayLiteralBrackets:
   EnforcedStyle: space
+  Exclude:
+    - 'blocklistshow.gemspec'
 
 Layout/SpaceInsideParens:
   EnforcedStyle: space
+  Exclude:
+    - 'blocklistshow.gemspec'
 
 Layout/SpaceInsideRangeLiteral:
-  EnforcedStyle: space
+  #EnforcedStyle: space
+  Enabled: false
 
 Layout/SpaceInsideReferenceBrackets:
   EnforcedStyle: space
+  Exclude:
+    - 'blocklistshow.gemspec'
+
+Metrics/LineLength:
+  Exclude:
+    - 'blocklistshow.gemspec'
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
 
 Style/RegexpLiteral:
   Enabled: false

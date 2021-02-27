@@ -1,4 +1,4 @@
-#!/usr/local/bin/ruby -w
+#!/usr/local/bin/ruby
 
 require 'ipaddr'
 require 'bdb'
@@ -10,7 +10,7 @@ def geodb_key( ip )
   ip2 = IPAddr.new( ip )
   return ip2.hton if ip2.ipv6?
 
-  "\0\0\0\0\0\0\0\0\0\0\0\0" + ip2.hton
+  "\0\0\0\0\0\0\0\0\0\0\0\0#{ip2.hton}"
 end
 
 def get_cc( ip )

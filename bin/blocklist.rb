@@ -1,4 +1,4 @@
-#!/usr/local/bin/ruby -w
+#!/usr/local/bin/ruby
 
 require 'ipaddr'
 require 'json'
@@ -16,7 +16,7 @@ def get_dns( ip )
   result = nil
   `host '#{ip}'`.split( "\n" ).each do |line|
     return 'not found' if line =~ /not found/
-    return line.split( /[\s]/ ).last if line =~ /domain name pointer/
+    return line.split( /\s/ ).last if line =~ /domain name pointer/
 
     result = line
   end
@@ -61,7 +61,7 @@ def geodb_key( ip )
   ip2 = IPAddr.new( ip )
   return ip2.hton if ip2.ipv6?
 
-  "\0\0\0\0\0\0\0\0\0\0\0\0" + ip2.hton
+  "\0\0\0\0\0\0\0\0\0\0\0\0#{ip2.hton}"
 end
 
 def get_cc( ip )
@@ -103,10 +103,10 @@ def load_cache
 end
 
 def save_cache
-  File.write( DNS_CACHE_FILE, JSON.dump( @dns_cache ) + "\n" )
+  File.write( DNS_CACHE_FILE, "#{JSON.dump( @dns_cache )}\n" )
   return if @cc_cache.nil?
 
-  File.write( CC_CACHE_FILE, JSON.dump( @cc_cache ) + "\n" )
+  File.write( CC_CACHE_FILE, "#{JSON.dump( @cc_cache )}\n" )
 end
 
 filter_cc = nil
@@ -131,7 +131,7 @@ until ARGV.empty?
   when /^[a-z][a-z]$/
     filter_cc = option
   else
-    STDERR.puts "Fehler #{option}"
+    warn "Fehler #{option}"
     exit 65
   end
 end
@@ -150,14 +150,12 @@ list.sort.each do |row|
   address_port.strip!
   pair = address_port.split( '/' )
   port = pair.last.split( ':' ).last.to_i
-  unless filter_port.zero?
-    next if port != filter_port
-  end
+  next unless filter_port.zero? && port != filter_port
+
   ip = pair.first.strip
   cc = get_cached_cc( ip )
-  unless filter_cc.nil?
-    next if cc != filter_cc
-  end
+  next unless filter_cc.nil? && cc != filter_cc
+
   dns = get_cached_dns( ip )
   white =
     case state
