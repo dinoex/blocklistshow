@@ -65,13 +65,13 @@ def geodb_key( ip )
 end
 
 def get_cc( ip )
-  db = BDB::Btree.open(
-    GEODB_FILE, nil, BDB::RDONLY, 0o0644,
-    'set_pagesize' => 1024, 'set_cachesize' => [ 0, 32 * 1024, 0 ]
-  )
-  country = db.cursor.set_range( geodb_key( ip ) )[ 1 ][ 0 .. 1 ]
-  db.close
-  country
+  if @db.nil?
+    @db = BDB::Btree.open(
+      GEODB_FILE, nil, BDB::RDONLY, 0o0644,
+      'set_pagesize' => 1024, 'set_cachesize' => [ 0, 32 * 1024, 0 ]
+    )
+  end
+  @db.cursor.set_range( geodb_key( ip ) )[ 1 ][ 0 .. 1 ]
 end
 
 def get_cached_cc( ip )
@@ -108,6 +108,8 @@ def save_cache
 
   File.write( CC_CACHE_FILE, "#{JSON.dump( @cc_cache )}\n" )
 end
+
+@db = nil
 
 filter_cc = nil
 filter_port = 0
