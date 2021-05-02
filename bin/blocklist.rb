@@ -152,11 +152,11 @@ list.sort.each do |row|
   address_port.strip!
   pair = address_port.split( '/' )
   port = pair.last.split( ':' ).last.to_i
-  next unless filter_port.zero? && port != filter_port
+  next if !filter_port.zero? && ( port != filter_port )
 
   ip = pair.first.strip
   cc = get_cached_cc( ip )
-  next unless filter_cc.nil? && cc != filter_cc
+  next if !filter_cc.nil? && ( cc != filter_cc )
 
   dns = get_cached_dns( ip )
   white =
