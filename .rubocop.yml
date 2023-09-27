@@ -2,6 +2,9 @@ inherit_from: .rubocop_todo.yml
 
 # rubocop configuration
 
+AllCops:
+  NewCops: enable
+
 Layout/SpaceInsideArrayLiteralBrackets:
   EnforcedStyle: space
   Exclude:

@@ -37,35 +37,37 @@ require 'bdb1'
 #         char            __ss_pad2[_SS_PAD2SIZE];
 # };
 
+def decode_ip( key, afamily )
+  case afamily
+  when 2
+    off = 4
+    key[ off .. ].unpack( 'C4' ).join( '.' )
+  when 28
+    off = 8
+    IPAddr::IN6FORMAT % key[ off .. ].unpack( 'n8' )
+  else
+    raise IPAddr::AddressFamilyError, 'unsupported address family'
+  end
+end
+
 def ip_from_key( key )
-  off = 4
   # puts "size: #{key.size}"
 
-  len = key.unpack( 'C' ).first
+  # len = key.unpack1( 'C' )
   # puts "len: #{len}"
 
-  af = key[ 1 .. 1 ].unpack( 'C' ).first
+  af = key[ 1 .. 1 ].unpack1( 'C' )
   # puts "af: #{af}"
 
-  ip =
-    case af
-    when 2
-      off = 4
-      key[ off .. ].unpack('C4').join('.')
-    when 28
-      off = 8
-      IPAddr::IN6FORMAT % key[ off .. ].unpack('n8')
-    else
-      raise IPAddr::AddressFamilyError, "unsupported address family"
-    end
-
+  ip = decode_ip( key, af )
   # puts "ip: #{ip}"
+
   IPAddr.new( ip )
 end
 
 def search_db( dbh, list )
   found = []
-  dbh.each_pair do |key, val|
+  dbh.each_key do |key|
     # pp key, val
     ip2 = ip_from_key( key ).to_s
     next unless list.include?( ip2 )
@@ -80,7 +82,7 @@ def remove_db( dbh, found )
   removed = 0
   found.each do |key|
     dbh.delete( key )
-    removed +=1
+    removed += 1
   end
   puts "removed: #{removed}"
   dbh.sync

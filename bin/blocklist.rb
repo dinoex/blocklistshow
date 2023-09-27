@@ -2,7 +2,6 @@
 
 require 'ipaddr'
 require 'json'
-require 'pp'
 
 DNS_CACHE_FILE = '/var/db/blacklistd.dns.json'.freeze
 CC_CACHE_FILE = '/var/db/blacklistd.cc.json'.freeze
