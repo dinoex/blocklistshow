@@ -2,7 +2,7 @@
 Gem::Specification.new do |s|
   s.required_ruby_version = '>= 2.7'
   s.name = 'blocklistshow'
-  s.version = '1.2'
+  s.version = '1.3'
   s.summary = 'show blocklistd data'
   s.description = 'Display of data from blocklistd on FreeBSD with country codes and reverse DNS.'
   s.authors = ['Dirk Meyer']

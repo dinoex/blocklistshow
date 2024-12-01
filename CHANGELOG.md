@@ -1,3 +1,9 @@
+## 1.3 (2024-12-01)
+
+  - Gem release
+  - call helper to unblock
+  - support new filenames
+
 ## 1.2 (2023-09-30)
 
   - Gem release
