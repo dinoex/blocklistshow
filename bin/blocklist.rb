@@ -3,8 +3,35 @@
 require 'ipaddr'
 require 'json'
 
-DNS_CACHE_FILE = '/var/db/blacklistd.dns.json'.freeze
-CC_CACHE_FILE = '/var/db/blacklistd.cc.json'.freeze
+# find matching filenames
+def find_files( list )
+  list.each do |filename|
+    next if filename == ''
+
+    return filename if File.exist?( filename )
+  end
+
+  list.first
+end
+
+CC_CACHE_FILES = [
+  '/var/db/blocklistd.cc.json',
+  '/var/db/blacklistd.cc.json'
+].freeze
+
+DNS_CACHE_FILES = [
+  '/var/db/blocklistd.dns.json',
+  '/var/db/blacklistd.dns.json'
+].freeze
+
+BLOCKLISTCTL_FILES = [
+  `which blocklistctl`.delete( "\n" ),
+  `which blacklistctl`.delete( "\n" )
+]
+
+CC_CACHE_FILE = find_files( CC_CACHE_FILES )
+DNS_CACHE_FILE = find_files( DNS_CACHE_FILES )
+BLOCKLISTCTL = find_files( BLOCKLISTCTL_FILES )
 
 # pkg install databases/ruby-bdb net/webalizer-geodb
 GEODB_FILE = '/usr/local/share/geolizer/GeoDB.dat'.freeze
@@ -139,7 +166,7 @@ end
 
 load_cache
 list = []
-raw = `blacklistctl dump -b -n -w`
+raw = `#{BLOCKLISTCTL} dump -b -n -w`
 # pp raw
 raw.split( "\n" ).each do |line|
   address_port, state, _nfail, access = line.split( "\t", 4 )
