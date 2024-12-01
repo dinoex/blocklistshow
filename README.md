@@ -8,7 +8,7 @@ The reverse DNS and the country codes are cached.
 Install it on the server running blocklistd by:
 
     $ pkg install databases/ruby-bdb net/webalizer-geodb
-    $ gem install blocklist
+    $ gem install blocklistshow
 
 ## Usage
 
